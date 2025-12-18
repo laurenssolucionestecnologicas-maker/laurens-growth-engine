@@ -28,7 +28,7 @@ const CTASection = () => {
             className="mt-10"
             asChild
           >
-            <a href={whatsappLink} target="_blank" rel="noopener noreferrer">
+            <a href={whatsappLink} target="https://wa.me/message/KX2PN7QCG4GNG1" rel="noopener noreferrer">
               <MessageCircle className="w-6 h-6" />
               Hablar por WhatsApp
             </a>

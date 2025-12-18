@@ -16,28 +16,28 @@ const Footer = () => {
 
           <div className="flex items-center gap-4">
             <a
-              href="#"
+              href="https://www.instagram.com/laurenssoluciones/"
               className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors"
               aria-label="Instagram"
             >
               <Instagram className="w-5 h-5 text-primary" />
             </a>
             <a
-              href="#"
+              href="https://www.instagram.com/laurenssoluciones/"
               className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors"
               aria-label="Facebook"
             >
               <Facebook className="w-5 h-5 text-primary" />
             </a>
             <a
-              href="#"
+              href="https://www.instagram.com/laurenssoluciones/"
               className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors"
               aria-label="LinkedIn"
             >
               <Linkedin className="w-5 h-5 text-primary" />
             </a>
             <a
-              href="mailto:contacto@laurens.com"
+              href="laurenssolucionestecnologicas@gmail.com"
               className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors"
               aria-label="Email"
             >
