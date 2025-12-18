@@ -17,24 +17,29 @@ const ContactForm = () => {
     setIsSubmitting(true);
 
     try {
-      const form = e.currentTarget;
-      const formData = new FormData(form);
+      const form = new FormData(e.currentTarget);
+      const payload = {
+        name: String(form.get("name") || ""),
+        business: String(form.get("business") || ""),
+        phone: String(form.get("phone") || ""),
+        social: String(form.get("social") || ""),
+        product: String(form.get("product") || ""),
+        budget: String(form.get("budget") || ""),
+        goal: String(form.get("goal") || ""),
+      };
 
-      const payload = Object.fromEntries(formData.entries());
-
-      const res = await fetch(`${API_URL}/api/contact`, {
+      const resp = await fetch(`${API_URL}/api/contact`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json().catch(() => ({}));
+      const data = await resp.json().catch(() => ({}));
 
-      if (!res.ok || !data.ok) {
-        throw new Error(data?.message || "No se pudo enviar el formulario.");
+      if (!resp.ok || !data?.ok) {
+        throw new Error(data?.message || "Error enviando formulario");
       }
 
-      form.reset();
       navigate("/gracias");
     } catch (err) {
       console.error(err);
@@ -50,8 +55,7 @@ const ContactForm = () => {
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-10">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold">
-              Recibe tu auditoría y una{" "}
-              <span className="text-slate-500">propuesta de acción</span>
+              Recibe tu auditoría y una <span className="text-slate-500">propuesta de acción</span>
             </h2>
           </div>
 
@@ -71,7 +75,7 @@ const ContactForm = () => {
             <div className="grid sm:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="phone">Teléfono / WhatsApp *</Label>
-                <Input id="phone" name="phone" type="tel" required placeholder="+1 809 123 4567" className="h-12" />
+                <Input id="phone" name="phone" type="tel" required placeholder="+1 809 000 0000" className="h-12" />
               </div>
 
               <div className="space-y-2">

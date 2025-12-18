@@ -6,31 +6,32 @@ const nodemailer = require("nodemailer");
 dotenv.config();
 
 const app = express();
+app.use(express.json());
 
-/**
- * FRONTEND_ORIGINS puede venir así:
- * FRONTEND_ORIGINS=http://localhost:5173,https://laurensmarketing.com,https://www.laurensmarketing.com
- */
-const allowedOrigins = (process.env.FRONTEND_ORIGINS || "")
+// ✅ CORS: acepta varios dominios separados por coma
+const allowedOrigins = (process.env.FRONTEND_ORIGIN || "")
   .split(",")
   .map(s => s.trim())
   .filter(Boolean);
 
-app.use(cors({
-  origin: function (origin, callback) {
-    // Permite requests sin origin (Postman/curl/servidor a servidor)
-    if (!origin) return callback(null, true);
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Permite Postman/curl y requests sin origin
+      if (!origin) return callback(null, true);
 
-    if (allowedOrigins.length === 0) return callback(null, true); // fallback
-    if (allowedOrigins.includes(origin)) return callback(null, true);
+      // Si no definiste whitelist, permite todo (útil en dev)
+      if (allowedOrigins.length === 0) return callback(null, true);
 
-    return callback(new Error(`CORS blocked for origin: ${origin}`));
-  }
-}));
+      if (allowedOrigins.includes(origin)) return callback(null, true);
 
-app.use(express.json());
+      return callback(new Error("Not allowed by CORS: " + origin));
+    },
+  })
+);
 
-// Health check
+// ✅ Para Render / root
+app.get("/", (_, res) => res.send("OK - Laurens API"));
 app.get("/health", (_, res) => res.json({ ok: true }));
 
 app.post("/api/contact", async (req, res) => {
@@ -41,10 +42,6 @@ app.post("/api/contact", async (req, res) => {
       return res.status(400).json({ ok: false, message: "Faltan campos requeridos." });
     }
 
-    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
-      return res.status(500).json({ ok: false, message: "Config de correo incompleta (GMAIL_USER / GMAIL_APP_PASSWORD)." });
-    }
-
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -53,8 +50,7 @@ app.post("/api/contact", async (req, res) => {
       },
     });
 
-    const subject = `Nuevo lead - Laurens: ${business}`;
-
+    const subject = `Nuevo lead - Laurens Growth Engine: ${business}`;
     const text = `
 Nuevo lead desde la landing:
 
@@ -80,12 +76,9 @@ Objetivo: ${goal}
       </ul>
     `;
 
-    const mailFrom = process.env.MAIL_FROM || process.env.GMAIL_USER;
-    const mailTo = process.env.MAIL_TO || process.env.GMAIL_USER;
-
     await transporter.sendMail({
-      from: mailFrom,
-      to: mailTo,
+      from: process.env.MAIL_FROM || process.env.GMAIL_USER,
+      to: process.env.MAIL_TO || process.env.GMAIL_USER,
       subject,
       text,
       html,
@@ -93,10 +86,10 @@ Objetivo: ${goal}
 
     return res.json({ ok: true, message: "Correo enviado." });
   } catch (err) {
-    console.error("CONTACT ERROR:", err);
+    console.error(err);
     return res.status(500).json({ ok: false, message: "Error enviando el correo." });
   }
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000; // ✅ Render usa PORT automático
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
