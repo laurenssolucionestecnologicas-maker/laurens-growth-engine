@@ -19,7 +19,7 @@ const LeadMagnetSection = () => {
       behavior: 'smooth'
     });
   };
-  return <section className="py-20 lg:py-28 bg-background text-foreground">
+  return <section className="py-20 lg:py-28 bg-secondary text-secondary-foreground">
       <div className="container">
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col lg:flex-row gap-12 items-center">
@@ -31,7 +31,7 @@ const LeadMagnetSection = () => {
               
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">
                 Te regalamos una{" "}
-                <span className="text-primary-foreground">mini auditoría</span>{" "}
+                <span className="text-primary">mini auditoría</span>{" "}
                 rápida
               </h2>
               
@@ -44,7 +44,7 @@ const LeadMagnetSection = () => {
                   </div>)}
               </div>
 
-              <Button variant="cta" size="xl" onClick={scrollToForm} className="mt-10 text-secondary">
+              <Button variant="cta" size="xl" onClick={scrollToForm} className="mt-10">
                 Solicitar auditoría
               </Button>
             </div>
