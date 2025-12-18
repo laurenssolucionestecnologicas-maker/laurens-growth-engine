@@ -1,27 +1,48 @@
-require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const dotenv = require("dotenv");
 const nodemailer = require("nodemailer");
+
+dotenv.config();
 
 const app = express();
 
+/**
+ * FRONTEND_ORIGINS puede venir así:
+ * FRONTEND_ORIGINS=http://localhost:5173,https://laurensmarketing.com,https://www.laurensmarketing.com
+ */
+const allowedOrigins = (process.env.FRONTEND_ORIGINS || "")
+  .split(",")
+  .map(s => s.trim())
+  .filter(Boolean);
+
 app.use(cors({
-  origin: process.env.CLIENT_ORIGIN,
-  methods: ["POST", "GET"],
+  origin: function (origin, callback) {
+    // Permite requests sin origin (Postman/curl/servidor a servidor)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.length === 0) return callback(null, true); // fallback
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+
+    return callback(new Error(`CORS blocked for origin: ${origin}`));
+  }
 }));
+
 app.use(express.json());
 
-app.get("/health", (req, res) => {
-  res.json({ ok: true });
-});
+// Health check
+app.get("/health", (_, res) => res.json({ ok: true }));
 
 app.post("/api/contact", async (req, res) => {
   try {
-    const { name, business, phone, social, product, budget, goal } = req.body;
+    const { name, business, phone, social, product, budget, goal } = req.body || {};
 
-    // Validación básica
     if (!name || !business || !phone || !product || !goal) {
-      return res.status(400).json({ error: "Faltan campos requeridos." });
+      return res.status(400).json({ ok: false, message: "Faltan campos requeridos." });
+    }
+
+    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+      return res.status(500).json({ ok: false, message: "Config de correo incompleta (GMAIL_USER / GMAIL_APP_PASSWORD)." });
     }
 
     const transporter = nodemailer.createTransport({
@@ -32,33 +53,48 @@ app.post("/api/contact", async (req, res) => {
       },
     });
 
-    const toEmail = process.env.TO_EMAIL || process.env.GMAIL_USER;
+    const subject = `Nuevo lead - Laurens: ${business}`;
 
-    const subject = `Nuevo lead - ${business} (${name})`;
-    const text =
-`Nuevo formulario de contacto:
+    const text = `
+Nuevo lead desde la landing:
 
 Nombre: ${name}
 Negocio: ${business}
-Teléfono/WhatsApp: ${phone}
-Redes: ${social || "N/A"}
+Tel/WhatsApp: ${phone}
+Instagram/Facebook: ${social || "N/A"}
 Qué vende: ${product}
 Presupuesto: ${budget || "N/A"}
 Objetivo: ${goal}
-`;
+`.trim();
+
+    const html = `
+      <h2>Nuevo lead desde la landing</h2>
+      <ul>
+        <li><b>Nombre:</b> ${name}</li>
+        <li><b>Negocio:</b> ${business}</li>
+        <li><b>Tel/WhatsApp:</b> ${phone}</li>
+        <li><b>Instagram/Facebook:</b> ${social || "N/A"}</li>
+        <li><b>Qué vende:</b> ${product}</li>
+        <li><b>Presupuesto:</b> ${budget || "N/A"}</li>
+        <li><b>Objetivo:</b> ${goal}</li>
+      </ul>
+    `;
+
+    const mailFrom = process.env.MAIL_FROM || process.env.GMAIL_USER;
+    const mailTo = process.env.MAIL_TO || process.env.GMAIL_USER;
 
     await transporter.sendMail({
-      from: `"Laurens Landing" <${process.env.GMAIL_USER}>`,
-      to: toEmail,
-      replyTo: process.env.GMAIL_USER,
+      from: mailFrom,
+      to: mailTo,
       subject,
       text,
+      html,
     });
 
-    return res.json({ ok: true });
+    return res.json({ ok: true, message: "Correo enviado." });
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: "No se pudo enviar el correo." });
+    console.error("CONTACT ERROR:", err);
+    return res.status(500).json({ ok: false, message: "Error enviando el correo." });
   }
 });
 
