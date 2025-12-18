@@ -11,10 +11,8 @@ import ContactForm from "@/components/landing/ContactForm";
 import FAQSection from "@/components/landing/FAQSection";
 import CTASection from "@/components/landing/CTASection";
 import Footer from "@/components/landing/Footer";
-
 const Index = () => {
-  return (
-    <main className="min-h-screen">
+  return <main className="min-h-screen">
       <Navbar />
       <div className="pt-16 lg:pt-20">
         <HeroSection />
@@ -30,8 +28,6 @@ const Index = () => {
         <CTASection />
         <Footer />
       </div>
-    </main>
-  );
+    </main>;
 };
-
 export default Index;
