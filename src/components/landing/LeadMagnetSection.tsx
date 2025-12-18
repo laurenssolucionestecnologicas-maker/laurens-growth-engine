@@ -19,8 +19,8 @@ const LeadMagnetSection = () => {
       behavior: 'smooth'
     });
   };
-  return <section className="py-20 lg:py-28 bg-[sidebar-primary-foreground] bg-sidebar-accent text-primary">
-      <div className="container bg-secondary">
+  return <section className="py-20 lg:py-28 bg-primary text-primary-foreground">
+      <div className="container">
         <div className="max-w-4xl mx-auto">
           <div className="flex flex-col lg:flex-row gap-12 items-center">
             <div className="flex-1 text-center lg:text-left">
