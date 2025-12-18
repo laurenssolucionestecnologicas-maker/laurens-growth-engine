@@ -26,7 +26,7 @@ const LeadMagnetSection = () => {
             <div className="flex-1 text-center lg:text-left">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/20 text-accent mb-6">
                 <Gift className="w-4 h-4" />
-                <span className="text-sm font-semibold text-secondary">Sin compromiso</span>
+                <span className="text-sm font-semibold text-primary-foreground">Sin compromiso</span>
               </div>
               
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold leading-tight">
