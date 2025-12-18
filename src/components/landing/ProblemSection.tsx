@@ -30,8 +30,8 @@ const ProblemSection = () => {
 
         <div className="mt-14 grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {painPoints.map((point, index) => <div key={index} className="group p-6 bg-card rounded-2xl shadow-soft hover:shadow-medium transition-all duration-300 hover:-translate-y-1 border border-border/50">
-              <div className="w-12 h-12 rounded-xl flex items-center justify-center transition-colors bg-primary-foreground text-primary">
-                <point.icon className="w-6 h-6 bg-primary-foreground text-primary-foreground" />
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center transition-colors bg-secondary/20">
+                <point.icon className="w-6 h-6 text-secondary" />
               </div>
               <p className="mt-4 font-medium text-foreground/90">{point.text}</p>
             </div>)}
