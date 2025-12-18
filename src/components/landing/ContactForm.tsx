@@ -1,27 +1,24 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
 import { Send, Lock } from "lucide-react";
+
 const ContactForm = () => {
-  const {
-    toast
-  } = useToast();
+  const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     // Simulate form submission
     await new Promise(resolve => setTimeout(resolve, 1000));
-    toast({
-      title: "¡Solicitud enviada!",
-      description: "Te contactaremos en menos de 24 horas hábiles."
-    });
-    setIsSubmitting(false);
-    (e.target as HTMLFormElement).reset();
+    
+    // Redirect to thank you page
+    navigate("/gracias");
   };
   return <section className="py-20 lg:py-28 bg-secondary text-secondary-foreground" id="contact-form">
       <div className="container">
