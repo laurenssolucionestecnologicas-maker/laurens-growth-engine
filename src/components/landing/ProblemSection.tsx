@@ -21,7 +21,7 @@ const ProblemSection = () => {
             <span className="text-secondary">no pasa nada</span>?
           </h2>
           
-          <p className="mt-6 text-lg leading-relaxed text-primary bg-primary border-primary-foreground rounded-sm shadow-sm opacity-60">
+          <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
             La mayoría de negocios están activos en redes, pero no tienen un sistema para atraer clientes.
             Sin estrategia, tu contenido se vuelve "bonito" pero no genera ventas.
             <strong className="text-foreground"> Nosotros te ayudamos a convertir tu presencia digital en un motor de clientes.</strong>
