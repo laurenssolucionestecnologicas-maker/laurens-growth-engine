@@ -8,30 +8,33 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 
-// ✅ CORS: acepta varios dominios separados por coma
+// ✅ CORS: acepta lista separada por comas en FRONTEND_ORIGIN
 const allowedOrigins = (process.env.FRONTEND_ORIGIN || "")
   .split(",")
   .map(s => s.trim())
-  .filter(Boolean);
+  .filter(Boolean)
+  .map(o => o.replace(/\/$/, "")); // quita / final
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // Permite Postman/curl y requests sin origin
-      if (!origin) return callback(null, true);
+    origin: (origin, cb) => {
+      // curl/postman a veces no mandan Origin
+      if (!origin) return cb(null, true);
 
-      // Si no definiste whitelist, permite todo (útil en dev)
-      if (allowedOrigins.length === 0) return callback(null, true);
+      const cleanOrigin = origin.replace(/\/$/, "");
+      if (allowedOrigins.includes(cleanOrigin)) return cb(null, true);
 
-      if (allowedOrigins.includes(origin)) return callback(null, true);
-
-      return callback(new Error("Not allowed by CORS: " + origin));
+      return cb(new Error(`CORS blocked for origin: ${origin}`));
     },
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type"],
   })
 );
 
-// ✅ Para Render / root
-app.get("/", (_, res) => res.send("OK - Laurens API"));
+// ✅ Preflight
+app.options("*", cors());
+
+app.get("/", (_, res) => res.send("Laurens API OK. Use /health or /api/contact"));
 app.get("/health", (_, res) => res.json({ ok: true }));
 
 app.post("/api/contact", async (req, res) => {
@@ -51,18 +54,6 @@ app.post("/api/contact", async (req, res) => {
     });
 
     const subject = `Nuevo lead - Laurens Growth Engine: ${business}`;
-    const text = `
-Nuevo lead desde la landing:
-
-Nombre: ${name}
-Negocio: ${business}
-Tel/WhatsApp: ${phone}
-Instagram/Facebook: ${social || "N/A"}
-Qué vende: ${product}
-Presupuesto: ${budget || "N/A"}
-Objetivo: ${goal}
-`.trim();
-
     const html = `
       <h2>Nuevo lead desde la landing</h2>
       <ul>
@@ -80,16 +71,23 @@ Objetivo: ${goal}
       from: process.env.MAIL_FROM || process.env.GMAIL_USER,
       to: process.env.MAIL_TO || process.env.GMAIL_USER,
       subject,
-      text,
+      text: `Nuevo lead:
+Nombre: ${name}
+Negocio: ${business}
+Tel/WhatsApp: ${phone}
+Social: ${social || "N/A"}
+Qué vende: ${product}
+Presupuesto: ${budget || "N/A"}
+Objetivo: ${goal}`,
       html,
     });
 
     return res.json({ ok: true, message: "Correo enviado." });
   } catch (err) {
-    console.error(err);
+    console.error("CONTACT ERROR:", err);
     return res.status(500).json({ ok: false, message: "Error enviando el correo." });
   }
 });
 
-const PORT = process.env.PORT || 5000; // ✅ Render usa PORT automático
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));

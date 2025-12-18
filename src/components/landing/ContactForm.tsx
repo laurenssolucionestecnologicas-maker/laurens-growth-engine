@@ -11,39 +11,54 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 const ContactForm = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setErrorMsg(null);
 
     try {
-      const form = new FormData(e.currentTarget);
+      const form = e.currentTarget;
+      const formData = new FormData(form);
+
       const payload = {
-        name: String(form.get("name") || ""),
-        business: String(form.get("business") || ""),
-        phone: String(form.get("phone") || ""),
-        social: String(form.get("social") || ""),
-        product: String(form.get("product") || ""),
-        budget: String(form.get("budget") || ""),
-        goal: String(form.get("goal") || ""),
+        name: String(formData.get("name") || "").trim(),
+        business: String(formData.get("business") || "").trim(),
+        phone: String(formData.get("phone") || "").trim(),
+        social: String(formData.get("social") || "").trim(),
+        product: String(formData.get("product") || "").trim(),
+        budget: String(formData.get("budget") || "").trim(),
+        goal: String(formData.get("goal") || "").trim(),
       };
 
-      const resp = await fetch(`${API_URL}/api/contact`, {
+      // Validación rápida en frontend
+      if (!payload.name || !payload.business || !payload.phone || !payload.product || !payload.goal) {
+        setErrorMsg("Completa los campos obligatorios.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      const res = await fetch(`${API_URL}/api/contact`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      const data = await resp.json().catch(() => ({}));
+      const data = await res.json().catch(() => ({}));
 
-      if (!resp.ok || !data?.ok) {
-        throw new Error(data?.message || "Error enviando formulario");
+      if (!res.ok || !data?.ok) {
+        throw new Error(data?.message || "No se pudo enviar el formulario.");
       }
 
+      // Opcional: reset form
+      form.reset();
+
+      // Redirect a gracias
       navigate("/gracias");
-    } catch (err) {
-      console.error(err);
-      alert("No se pudo enviar el formulario. Intenta de nuevo.");
+    } catch (err: any) {
+      console.error("FORM ERROR:", err);
+      setErrorMsg(err?.message || "No se pudo enviar el formulario. Intenta de nuevo.");
     } finally {
       setIsSubmitting(false);
     }
@@ -55,11 +70,15 @@ const ContactForm = () => {
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-10">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold">
-              Recibe tu auditoría y una <span className="text-slate-500">propuesta de acción</span>
+              Recibe tu auditoría y una{" "}
+              <span className="text-slate-500">propuesta de acción</span>
             </h2>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6 bg-card rounded-2xl p-8 shadow-medium text-card-foreground">
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-6 bg-card rounded-2xl p-8 shadow-medium text-card-foreground"
+          >
             <div className="grid sm:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="name">Nombre y Apellido *</Label>
@@ -86,7 +105,13 @@ const ContactForm = () => {
 
             <div className="space-y-2">
               <Label htmlFor="product">¿Qué vendes? *</Label>
-              <Textarea id="product" name="product" required placeholder="Describe brevemente tu producto o servicio" className="min-h-[100px] resize-none" />
+              <Textarea
+                id="product"
+                name="product"
+                required
+                placeholder="Describe brevemente tu producto o servicio"
+                className="min-h-[100px] resize-none"
+              />
             </div>
 
             <div className="grid sm:grid-cols-2 gap-6">
@@ -102,6 +127,7 @@ const ContactForm = () => {
                   name="goal"
                   required
                   className="w-full h-12 px-3 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  defaultValue=""
                 >
                   <option value="">Selecciona una opción</option>
                   <option value="leads">Generar leads</option>
@@ -111,6 +137,12 @@ const ContactForm = () => {
               </div>
             </div>
 
+            {errorMsg && (
+              <div className="text-sm rounded-lg border border-destructive/30 bg-destructive/10 text-destructive px-4 py-3">
+                {errorMsg}
+              </div>
+            )}
+
             <Button type="submit" variant="cta" size="xl" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? "Enviando..." : "Quiero mi auditoría gratis"}
               <Send className="w-5 h-5" />
@@ -119,6 +151,10 @@ const ContactForm = () => {
             <p className="text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
               <Lock className="w-4 h-4" />
               Tu información es confidencial. Solo la usamos para contactarte.
+            </p>
+
+            <p className="text-center text-xs text-muted-foreground">
+              API: {API_URL}
             </p>
           </form>
         </div>
