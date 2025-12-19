@@ -3,21 +3,24 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- TODO: Set the document title to the name of your application -->
     <title>LAURENS MARKETING</title>
     <meta name="En Laurens Soluciones Tecnológicas creamos contenido estratégico" content="Laurens Solcuiones" />
     <meta name="author" content="Laurens" />
 
+    <!-- 📧 EmailJS CDN (AGREGAR ESTO) -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    
     <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-C9JRTJBZ6P"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-C9JRTJBZ6P');
-</script>
-
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-C9JRTJBZ6P"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-C9JRTJBZ6P');
+      
+      // Inicializar EmailJS automáticamente cuando cargue la página
+      emailjs.init("GFWk_Y_SkriK_6hX7"); // 👈 REEMPLAZA CON TU PUBLIC KEY
+    </script>
   </head>
 
   <body>

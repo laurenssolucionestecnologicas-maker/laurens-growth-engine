@@ -6,13 +6,29 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Send, Lock } from "lucide-react";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
-
+// Declarar emailjs para TypeScript
+declare global {
+  interface Window {
+    emailjs: {
+      send: (
+        serviceId: string,
+        templateId: string,
+        templateParams: Record<string, string>
+      ) => Promise<{ status: number; text: string }>;
+    };
+  }
+}
 
 const ContactForm = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // 🔧 CONFIGURACIÓN DE EMAILJS
+  const EMAILJS_CONFIG = {
+    SERVICE_ID: "service_624it24",
+    TEMPLATE_ID: "template_contact",
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -23,50 +39,78 @@ const ContactForm = () => {
       const form = e.currentTarget;
       const formData = new FormData(form);
 
-      const payload = {
-        name: String(formData.get("name") || "").trim(),
-        business: String(formData.get("business") || "").trim(),
-        phone: String(formData.get("phone") || "").trim(),
-        social: String(formData.get("social") || "").trim(),
-        product: String(formData.get("product") || "").trim(),
-        budget: String(formData.get("budget") || "").trim(),
-        goal: String(formData.get("goal") || "").trim(),
-      };
+      // 📥 Obtener valores
+      const name = (formData.get("name") as string || "").trim();
+      const business = (formData.get("business") as string || "").trim();
+      const phone = (formData.get("phone") as string || "").trim();
+      const email = (formData.get("email") as string || "").trim();
+      const social = (formData.get("social") as string || "").trim();
+      const product = (formData.get("product") as string || "").trim();
+      const budget = (formData.get("budget") as string || "").trim();
+      const goal = (formData.get("goal") as string || "").trim();
 
-      // Validación rápida en frontend
-      if (!payload.name || !payload.business || !payload.phone || !payload.product || !payload.goal) {
-        setErrorMsg("Completa los campos obligatorios.");
+      // ✅ Validación
+      if (!name || !business || !phone || !email || !product || !goal) {
+        setErrorMsg("Completa todos los campos obligatorios.");
         setIsSubmitting(false);
         return;
       }
 
-      const res = await fetch(`${API_URL}/api/contact`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json().catch(() => ({}));
-
-      if (!res.ok || !data?.ok) {
-        throw new Error(data?.message || "No se pudo enviar el formulario.");
+      if (!window.emailjs) {
+        throw new Error("EmailJS no está disponible. Recarga la página.");
       }
 
-      // Opcional: reset form
-      form.reset();
+      // 📧 Parámetros para EmailJS (alineados con el template)
+      const templateParams = {
+        from_name: name,
+        from_email: email,
+        reply_to: email,
+        business: business,
+        phone: phone,
+        social: social || "No proporcionado",
+        product: product,
+        budget: budget || "No especificado",
+        goal: goal,
+        date: new Date().toLocaleString("es-ES"),
+        to_name: "Laurens Growth Engine",
+      };
 
-      // Redirect a gracias
+      await window.emailjs.send(
+        EMAILJS_CONFIG.SERVICE_ID,
+        EMAILJS_CONFIG.TEMPLATE_ID,
+        templateParams
+      );
+
+      // ✅ Éxito
+      form.reset();
       navigate("/gracias");
-    } catch (err: any) {
-      console.error("FORM ERROR:", err);
-      setErrorMsg(err?.message || "No se pudo enviar el formulario. Intenta de nuevo.");
+
+    } catch (err: unknown) {
+      console.error("❌ Error EmailJS:", err);
+
+      if (err instanceof Error) {
+        if (err.message.includes("Origin not allowed")) {
+          setErrorMsg("Error de configuración. Agrega tu dominio en EmailJS.");
+        } else if (err.message.includes("Invalid template")) {
+          setErrorMsg("Error: Verifica el ID del template.");
+        } else if (err.message.includes("Invalid service")) {
+          setErrorMsg("Error: Verifica el ID del servicio.");
+        } else {
+          setErrorMsg(err.message);
+        }
+      } else {
+        setErrorMsg("Error inesperado. Intenta nuevamente.");
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <section className="py-20 lg:py-28 bg-secondary text-secondary-foreground" id="contact-form">
+    <section
+      className="py-20 lg:py-28 bg-secondary text-secondary-foreground"
+      id="contact-form"
+    >
       <div className="container">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-10">
@@ -80,30 +124,70 @@ const ContactForm = () => {
             onSubmit={handleSubmit}
             className="space-y-6 bg-card rounded-2xl p-8 shadow-medium text-card-foreground"
           >
+            {/* Nombre / Negocio */}
             <div className="grid sm:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="name">Nombre y Apellido *</Label>
-                <Input id="name" name="name" required placeholder="Tu nombre completo" className="h-12" />
+                <Input
+                  id="name"
+                  name="name"
+                  required
+                  placeholder="Tu nombre completo"
+                  className="h-12"
+                />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="business">Nombre del negocio *</Label>
-                <Input id="business" name="business" required placeholder="Tu empresa o marca" className="h-12" />
+                <Input
+                  id="business"
+                  name="business"
+                  required
+                  placeholder="Tu empresa o marca"
+                  className="h-12"
+                />
               </div>
             </div>
 
+            {/* Teléfono / Email */}
             <div className="grid sm:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="phone">Teléfono / WhatsApp *</Label>
-                <Input id="phone" name="phone" type="tel" required placeholder="+1 809 000 0000" className="h-12" />
+                <Input
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  required
+                  placeholder="+1 809 000 0000"
+                  className="h-12"
+                />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="social">Instagram / Facebook</Label>
-                <Input id="social" name="social" placeholder="@tunegocio" className="h-12" />
+                <Label htmlFor="email">Correo electrónico *</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  placeholder="correo@ejemplo.com"
+                  className="h-12"
+                />
               </div>
             </div>
 
+            {/* Redes */}
+            <div className="space-y-2">
+              <Label htmlFor="social">Instagram / Facebook</Label>
+              <Input
+                id="social"
+                name="social"
+                placeholder="@tunegocio"
+                className="h-12"
+              />
+            </div>
+
+            {/* Producto */}
             <div className="space-y-2">
               <Label htmlFor="product">¿Qué vendes? *</Label>
               <Textarea
@@ -115,10 +199,16 @@ const ContactForm = () => {
               />
             </div>
 
+            {/* Presupuesto / Objetivo */}
             <div className="grid sm:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="budget">Presupuesto mensual aproximado</Label>
-                <Input id="budget" name="budget" placeholder="Opcional" className="h-12" />
+                <Input
+                  id="budget"
+                  name="budget"
+                  placeholder="Opcional"
+                  className="h-12"
+                />
               </div>
 
               <div className="space-y-2">
@@ -127,8 +217,8 @@ const ContactForm = () => {
                   id="goal"
                   name="goal"
                   required
-                  className="w-full h-12 px-3 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                   defaultValue=""
+                  className="w-full h-12 px-3 rounded-lg border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                 >
                   <option value="">Selecciona una opción</option>
                   <option value="leads">Generar leads</option>
@@ -138,24 +228,37 @@ const ContactForm = () => {
               </div>
             </div>
 
+            {/* Error */}
             {errorMsg && (
               <div className="text-sm rounded-lg border border-destructive/30 bg-destructive/10 text-destructive px-4 py-3">
                 {errorMsg}
               </div>
             )}
 
-            <Button type="submit" variant="cta" size="xl" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? "Enviando..." : "Quiero mi auditoría gratis"}
-              <Send className="w-5 h-5" />
+            {/* Botón */}
+            <Button
+              type="submit"
+              variant="cta"
+              size="xl"
+              className="w-full"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <span className="animate-pulse mr-2">⏳</span>
+                  Enviando...
+                </>
+              ) : (
+                <>
+                  Quiero mi auditoría gratis
+                  <Send className="w-5 h-5 ml-2" />
+                </>
+              )}
             </Button>
 
             <p className="text-center text-sm text-muted-foreground flex items-center justify-center gap-2">
               <Lock className="w-4 h-4" />
               Tu información es confidencial. Solo la usamos para contactarte.
-            </p>
-
-            <p className="text-center text-xs text-muted-foreground">
-              API: {API_URL}
             </p>
           </form>
         </div>
