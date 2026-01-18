@@ -128,7 +128,6 @@ const Contact = () => {
     if (!result) {
       e.preventDefault();
     }
-    (document as any).charset = "UTF-8";
   };
 
   return (
