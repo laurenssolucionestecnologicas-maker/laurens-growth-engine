@@ -1,4 +1,5 @@
 import { Instagram, Facebook, Linkedin, Mail } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
@@ -46,7 +47,13 @@ const Footer = () => {
           </div>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-border/20 text-center">
+        <div className="mt-8 pt-8 border-t border-border/20 text-center space-y-3">
+          <Link 
+            to="/politica-de-privacidad" 
+            className="text-sm text-secondary-foreground/70 hover:text-primary transition-colors"
+          >
+            Política de Privacidad
+          </Link>
           <p className="text-sm text-secondary-foreground/60">
             © {new Date().getFullYear()} Laurens Soluciones Tecnológicas. Todos los derechos reservados.
           </p>
