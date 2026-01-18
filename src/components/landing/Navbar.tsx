@@ -44,7 +44,7 @@ const Navbar = () => {
               to="/contacto"
               className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
             >
-              Contacto
+              Contáctanos
             </Link>
             <Button
               variant="cta"
@@ -92,7 +92,7 @@ const Navbar = () => {
                 className="text-left py-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                 onClick={() => setIsOpen(false)}
               >
-                Contacto
+                Contáctanos
               </Link>
               <Button
                 variant="cta"
