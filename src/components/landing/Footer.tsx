@@ -1,9 +1,42 @@
 import { Instagram, Facebook, Linkedin, Mail } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useEffect } from "react";
 
 const Footer = () => {
+  useEffect(() => {
+    // LinkedIn Insight Tag
+    (window as any)._linkedin_partner_id = "8529970";
+    (window as any)._linkedin_data_partner_ids = (window as any)._linkedin_data_partner_ids || [];
+    (window as any)._linkedin_data_partner_ids.push("8529970");
+
+    (function(l: any) {
+      if (!l) {
+        (window as any).lintrk = function(a: any, b: any) {
+          (window as any).lintrk.q.push([a, b]);
+        };
+        (window as any).lintrk.q = [];
+      }
+      const s = document.getElementsByTagName("script")[0];
+      const b = document.createElement("script");
+      b.type = "text/javascript";
+      b.async = true;
+      b.src = "https://snap.licdn.com/li.lms-analytics/insight.min.js";
+      s.parentNode?.insertBefore(b, s);
+    })((window as any).lintrk);
+  }, []);
+
   return (
     <footer className="py-12 bg-secondary text-secondary-foreground border-t border-border/20">
+      {/* LinkedIn noscript pixel */}
+      <noscript>
+        <img 
+          height="1" 
+          width="1" 
+          style={{ display: 'none' }} 
+          alt="" 
+          src="https://px.ads.linkedin.com/collect/?pid=8529970&fmt=gif" 
+        />
+      </noscript>
       <div className="container">
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="text-center md:text-left">
